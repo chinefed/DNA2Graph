@@ -1,0 +1,49 @@
+{
+    "validity_mask": {
+        "block_size": 32,
+        "tolerance": 0.02,
+        "safety_margin": 200
+    },
+    "segmenter": {
+        "patch_size": 1024,
+        "p": 3,
+        "bilateral_diameter": 7,
+        "bilateral_sigma_color": 25,
+        "bilateral_sigma_space": 25,
+        "high_boost_radius": 50,
+        "high_boost_amount": 5,
+        "hysteresis_low_pct": 70,
+        "hysteresis_high_pct": 80,
+        "min_area_1": 500,
+        "closure_kernel_size": 5,
+        "min_area_2": 1000
+    },
+    "segmenter_trained": {
+        "patch_size": 1024,
+        "p": 3,
+        "batch_size": 1,
+        "overlap": 0.5,
+        "threshold": 0.1
+    },
+    "corrector": {
+        "batch_size": 32,
+        "min_cycle_length": 100,
+        "min_branch_length": 150,
+        "max_thickness": 6,
+        "structurality_depth_cutoff": 50,
+        "repair_1_min_graph_distance": 200,
+        "repair_1_max_euclidean_distance": 20,
+        "repair_2_restrict_to_endpoints": true,
+        "repair_2_min_graph_distance": 500,
+        "repair_2_max_euclidean_distance": 75,
+        "minimum_bbox_size": 200
+    },
+    "corrector_trained": {
+        "batch_size": 32,
+        "min_cycle_length": 100,
+        "min_branch_length": 150,
+        "repair_1_min_graph_distance": 200,
+        "repair_1_max_euclidean_distance": 20,
+        "minimum_bbox_size": 200
+    }
+}

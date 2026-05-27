@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dna2graph"
+version = "1.0.0"
+description = """
+Imaging software that automates the segmentation and analysis
+of DNA molecules in electron microscopy images (CLI + GUI).
+"""
+authors = [
+  { name = "Federico Chinello", email = "federico.chinello@studbocconi.it" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+  "numpy",
+  "scipy",
+  "scikit-image",
+  "opencv-python",
+  "torch",
+  "monai",
+  "pandas",
+  "networkx",
+  "h5py",
+  "roifile",
+  "huggingface-hub",
+  "tqdm",
+  "packaging"
+]
+
+[project.scripts]
+dna2graph-cli = "dna2graph.cli_main:main"
+dna2graph = "dna2graph.gui_main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["dna2graph"]
