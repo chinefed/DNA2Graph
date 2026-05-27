@@ -10,6 +10,7 @@
   --shadow: rgba(0, 0, 0, .08);
   --rad: 14px;
   --maxw: 800px;
+  --page-w: 800px;
   --g: 22px;
   --portrait-w: 220px;
 }
@@ -29,6 +30,7 @@ body {
 
 html,
 body {
+  min-width: var(--page-w);
   overflow-x: auto;
   overflow-y: scroll;
   scrollbar-gutter: stable;
@@ -49,7 +51,8 @@ a:hover {
 }
 
 .wrap {
-  width: var(--maxw);
+  width: var(--page-w);
+  min-width: var(--page-w);
   margin: 28px auto;
   padding: 0
 }
@@ -59,7 +62,8 @@ a:hover {
   border: 1px solid var(--rule);
   border-radius: var(--rad);
   box-shadow: 0 12px 34px var(--shadow);
-  width: 800px;
+  width: var(--page-w);
+  min-width: var(--page-w);
   margin: 0 auto;
   overflow: hidden;
 }
@@ -117,7 +121,7 @@ nav {
 .tabs {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-end
 }
 
