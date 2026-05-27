@@ -226,7 +226,7 @@ __marimo__/
 *.xdv
 
 # PDF files in /docs
-docs/*.pdf
+manual/*.pdf
 
 # Temporary files
 *.tmp
