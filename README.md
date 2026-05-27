@@ -1,5 +1,7 @@
 # DNA2Graph
 
+[![DOI](https://zenodo.org/badge/1251305157.svg)](https://doi.org/10.5281/zenodo.20413553)
+
 DNA2Graph is an open-source image analysis tool for automated segmentation and classification of DNA molecules in electron microscopy images obtained by rotary shadowing.
 
 It provides both an intuitive graphical user interface for local use and a command-line interface for scalable execution on HPC systems.
@@ -67,5 +69,6 @@ For help with DNA2Graph, contact the project maintainer at [federico.chinello@st
 
 ```text
 F. Chinello, E. Zanella, M. Giannattasio, F. M. Buffa, and Y. Doksani.
-DNA2Graph (Version 1.0) [Software]. 2026.
+DNA2Graph [Computer software]. Zenodo, 2026.
+https://doi.org/10.5281/zenodo.20413553
 ```
