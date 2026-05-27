@@ -5,10 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "dna2graph"
 version = "1.0.0"
-description = """
-Imaging software that automates the segmentation and analysis
-of DNA molecules in electron microscopy images (CLI + GUI).
-"""
+description = """Imaging software that automates the segmentation and analysis of DNA molecules in electron microscopy images (CLI + GUI)."""
 authors = [
   { name = "Federico Chinello", email = "federico.chinello@studbocconi.it" }
 ]
@@ -28,12 +25,37 @@ dependencies = [
   "roifile",
   "huggingface-hub",
   "tqdm",
-  "packaging"
+  "packaging",
+  "appdirs"
 ]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Image Processing",
+  "Topic :: Scientific/Engineering :: Medical Science Apps."
+]
+keywords = ["DNA", "electron microscopy", "image analysis", "segmentation"]
+
+[project.urls]
+Homepage = "https://federicochinello.com/DNA2Graph"
+Source = "https://github.com/chinefed/DNA2Graph"
+Documentation = "https://federicochinello.com/DNA2Graph"
 
 [project.scripts]
 dna2graph-cli = "dna2graph.cli_main:main"
 dna2graph = "dna2graph.gui_main:main"
+
+[tool.hatch.build]
+include = [
+  "dna2graph/**/*.py",
+  "dna2graph/assets/defaults.json",
+  "dna2graph/assets/target_cdf.npy",
+  "dna2graph/assets/logo.ico"
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["dna2graph"]
