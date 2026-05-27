@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=800, initial-scale=0.3, minimum-scale=0.1, maximum-scale=3.0, user-scalable=yes">
+  <title>DNA2Graph | Docs</title>
+  <meta name="description" content="Documentation of DNA2Graph, a tool that automates the processing of electron microscopy images of DNA molecules." />
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div class="mast">
+          <div class="brand">
+            <img src="assets/logo.png" alt="DNA2Graph logo" class="logo">
+            <div class="text">
+              <h1>DNA2Graph</h1>
+              <p class="tagline">Automated electron microscopy image analysis for DNA molecules</p>
+            </div>
+          </div>
+        </div>
+        <nav>
+          <div class="tabs">
+            <a class="tab" href="index.html">Home</a>
+            <a class="tab" href="download.html">Download</a>
+            <a class="tab" href="docs.html">Documentation</a>
+            <a class="tab" href="tutorials.html">Tutorials</a>
+            <a class="tab" href="outputs.html">Sample Outputs</a>
+            <a class="tab" href="https://chinefed.github.io/">Developer</a>
+          </div>
+        </nav>
+      </header>
+
+      <div class="shell grid">
+      <main>
+      
+        <section>
+          <h2>Source Code</h2>
+        
+          <p>
+            DNA2Graph source code is available on GitHub.
+          </p>
+        
+          <a href="https://github.com/chinefed/DNA2Graph" class="btn">
+            View Source Code on GitHub
+          </a>
+      
+        </section>
+      
+        <section>
+          <h2>Technical Manual</h2>
+      
+          <p>
+            This document provides a technical description of the algorithms and core
+            logic underlying DNA2Graph.<br>
+            It is intended for technical users who wish to understand the software’s internal functioning and configuration parameters.
+          </p>
+          
+          <a href="assets/docs/manual.pdf" class="btn">Download Technical Manual</a>
+          
+        </section>
+        
+        <section>
+          <h2>Default Parameter Configuration</h2>
+        
+          <p>
+            Default DNA2Graph parameters were optimized and validated for the following acquisition setup:
+          </p>
+        
+          <ul>
+            <li>MAPS Set Up: 17436nm</li>
+            <li>Microscope: Talos F200C G2</li>
+            <li>TEM mode: bright field</li>
+            <li>Bright field mode: microprobe</li>
+            <li>Condenser 2 aperture (microns): 150 um</li>
+            <li>Objective aperture (microns): 30 um</li>
+            <li>Camera: Ceta-S</li>
+            <li>Tile set: 4x4</li>
+            <li>Overlap: 10%</li>
+            <li>Resolution pixels: 4096x4096</li>
+            <li>Magnification: 8500X</li>
+          </ul>
+          
+          <div class="note-box">
+          <strong>NOTE:</strong>
+          Different acquisition setups may require parameter tuning.
+          </div>
+          
+          <a href="assets/docs/defaults.json" class="btn">Download Default Parameter Configuration (JSON)</a>
+          
+        </section>
+      
+      </main>
+      </div>
+
+      <footer>
+        © <span id="year"></span> Federico Chinello
+      </footer>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
