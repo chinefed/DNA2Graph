@@ -30,7 +30,8 @@ jobs:
       - name: Compile LaTeX PDF
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: manual/manual.tex
+          working_directory: manual
+          root_file: manual.tex
 
       - name: Prepare website assets
         run: |
