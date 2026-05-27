@@ -8,7 +8,7 @@ on:
       - 'website/**'
       - 'manual/**'
       - 'dna2graph/assets/defaults.json'
-      - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/website.yml'
 
 permissions:
   contents: read
