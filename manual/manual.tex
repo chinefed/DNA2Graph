@@ -1,0 +1,441 @@
+\documentclass[english,12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+	language=Python,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{green!50!black},
+	showstringspaces=false,
+	breaklines=true,
+	frame=single
+}
+\lstset{columns=flexible}
+
+\setcounter{tocdepth}{3}
+\title{DNA2Graph Technical Manual}
+\date{Version 1.0.1 - May 27, 2026}
+\author{Federico Chinello}
+
+\begin{document}
+	\maketitle
+	
+	{\small
+		\tableofcontents
+	}
+	
+	\newpage
+	
+	\section{Introduction}
+	
+	DNA2Graph is an open-source image analysis software for the automated segmentation and classification of DNA molecules in electron microscopy images obtained by rotary shadowing. It produces multiple outputs, including binary segmentation masks, ImageJ-compatible ROI annotations, quantitative length measurements, and spatial graph representations for downstream computational analysis.
+	
+	This document provides a technical description of the algorithms and core logic underlying DNA2Graph. It is intended for technical users who wish to understand the software’s internal functioning and configuration parameters. Throughout the document, user-adjustable parameters are denoted in \texttt{monospace font}.
+	
+	\section{Pipeline}
+	
+	DNA2Graph is designed as a two-stage processing framework. The pipeline, illustrated in Figure \ref{fig:pipeline}, consists of (i) a \textbf{Segmentation Module}, which isolates DNA structures from the background, and (ii) a graph-based \textbf{Error Correction Module}, which refines these structures to ensure continuity and biological plausibility.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.89\linewidth]{figures/pipeline}
+		\caption{\textbf{DNA2Graph.} The DNA2Graph pipeline consists of a Segmentation Module that generates an initial mask, followed by a graph-based Error Correction Module that refines it.}
+		\label{fig:pipeline}
+	\end{figure}
+	
+	\subsection{Segmentation Module}
+	
+	The Segmentation Module processes the input image to produce a coarse binary mask that separates DNA from the background. A high-level summary of the individual steps is provided in Table \ref{tab:segmentation_pipeline}, while the remainder of this section presents a detailed description of each step.
+	
+	\input{tables/segmentation_pipeline.tex}
+	
+	\subsubsection{Validity Mask Computation}
+	
+	A validity mask is computed to exclude regions outside the sample or corrupted by image acquisition errors (see Figure \ref{fig:validitymask}). These regions are ignored throughout the pipeline. Invalid regions are identified by low local intensity variation. A pixel is marked as invalid if the intensity range within a square neighborhood of side length \texttt{block\_size} is below \texttt{range\_factor} times the global image intensity range. The resulting invalid regions are then expanded by \texttt{safety\_margin} pixels.
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.6\linewidth]{figures/validity_mask}
+		\caption{\textbf{Validity Mask Computation}. DNA2Graph automatically detects invalid regions in the input image and disregards them throughout the pipeline, so that they cannot influence the final output.}
+		\label{fig:validitymask}
+	\end{figure}
+	
+	\subsubsection{Pre-processing}
+	
+	Several pre-processing steps are applied: 
+	
+	\begin{itemize} 
+		\item \textbf{Contrast enhancement }using percentile-based normalization: the lower and upper 0.175\% percentiles of pixel intensities are clipped and the remaining intensity range is linearly stretched to span the full dynamic range of the image.
+		\item \textbf{16-bit to 8-bit conversion}, if the input image is 16-bit.
+		\item \textbf{Histogram matching} with respect to a reference histogram obtained from a representative image.
+		\item \textbf{Inversion}: the image complement is computed (255 - \textit{image}).
+	\end{itemize}
+	
+	\subsubsection{Bilateral Filtering}
+	
+	The bilateral filter is a noise-reduction technique that preserves edges by combining spatial proximity and intensity similarity. This allows smoothing of homogeneous regions while maintaining sharp boundaries.
+	
+	\begin{itemize}
+		\item \texttt{bilateral\_diameter}: Diameter of the pixel neighborhood used during filtering.
+		\item \texttt{bilateral\_sigma\_color}: Standard deviation in the intensity domain; controls how dissimilar colors are mixed.
+		\item \texttt{bilateral\_sigma\_space}: Standard deviation in the spatial domain; controls the influence of distant pixels.
+	\end{itemize}
+	
+	\subsubsection{Unsharp Masking}
+	
+	Unsharp masking enhances image sharpness and improves local contrast by amplifying high-frequency components.
+	
+	\begin{itemize}
+		\item \texttt{high\_boost\_radius}: Radius of the Gaussian blur applied before detail extraction.
+		\item \texttt{high\_boost\_amount}: Scaling factor controlling the strength of the sharpening effect.
+	\end{itemize}
+	
+	\subsubsection{Hysteresis Thresholding}
+	
+	This step binarizes the image using a dual-threshold approach. The lower threshold $L$ and upper threshold $H$ are computed from percentiles of valid pixel intensities.
+	
+	\begin{itemize}
+		\item $L$: \texttt{hysteresis\_low\_pct} percentile of valid intensities.
+		\item $H$: \texttt{hysteresis\_high\_pct} percentile of valid intensities.
+	\end{itemize}
+	
+	Pixels with intensity above $H$ are marked as strong, those below $L$ are discarded, and intermediate pixels are retained only if connected (directly or indirectly) to strong pixels.
+	
+	\subsubsection{Area-based Pruning (I)}
+	
+	Connected components with area smaller than a predefined threshold are removed.
+	
+	\begin{itemize}
+		\item \texttt{min\_area\_1}: Minimum area required for a component to be retained.
+	\end{itemize}
+	
+	\subsubsection{Morphological Closure}
+	
+	Morphological closing is applied to fill small holes and connect nearby regions.
+	
+	\begin{itemize}
+		\item \texttt{closure\_kernel\_size}: Size of the structuring element used for the closing operation.
+	\end{itemize}
+	
+	\subsubsection{Area-based Pruning (II)}
+	
+	A second pruning step removes remaining small components after morphological processing.
+	
+	\begin{itemize}
+		\item \texttt{min\_area\_2}: Minimum area required for a component to be retained.
+	\end{itemize}
+	
+	\newpage
+	
+	\subsection{Error Correction Module}
+	
+	The binary mask produced by the Segmentation Module is used to extract a spatial graph representation of the DNA molecules. This spatial graph is then refined by an Error Correction Module consisting of a cascade of custom graph-processing algorithms. These algorithms are summarized at a high level in Table \ref{tab:correction_pipeline} and described in detail in the remainder of this section. Finally, the cleaned graph representation is converted back into image form.
+	
+	\vspace{-0.3cm}
+	
+	\input{tables/correction_pipeline.tex}
+	
+	\subsubsection{Mask-to-Graph Conversion}
+	
+	A spatial graph representation is extracted from the binary mask generated by the Segmentation Module. The mask is first skeletonized using the Zhang-Suen thinning algorithm. Skeletonization yields a one-pixel-wide representation that preserves the shape and connectivity of each DNA molecule. The skeletonized mask is then converted into a spatial graph $G = (V, C, E)$, where $V$ is the set of nodes, $C$ denotes their spatial coordinates, and $E$ is the set of edges connecting node pairs $(u, v) \in V$.
+	
+	Graph construction proceeds by mapping each skeleton pixel to a node, with its $(x, y)$ image coordinates stored as spatial attributes (Figure \ref{fig:skeleton2graph}). Edges are introduced between nodes whose corresponding pixels are immediate neighbors in the image grid, following the standard notion of 8-connectivity. Each molecule is represented as a connected component in the spatial graph.
+		
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\linewidth]{figures/skeleton2graph}
+		\caption{\textbf{Skeleton-to-graph Conversion.} To convert a skeleton into a spatial graph, each pixel that lies on the skeleton is mapped to a corresponding node in the graph, with its $(x, y)$ coordinates stored as node attributes.  An undirected edge is added between two nodes if their corresponding pixels in the skeleton are 8-connected, i.e., adjacent in the horizontal, vertical, ordiagonal direction.}
+		\label{fig:skeleton2graph}
+	\end{figure}
+	
+	\newpage
+	
+	\subsubsection{Repair Connectivity (I)}
+	
+	The algorithm restores connectivity in the spatial graph representation by adding edges between nodes that are close in Euclidean space but far apart in graph distance. It operates on endpoint nodes (i.e., nodes of degree 1) as sources, since these are natural candidates for broken connections.
+	
+	For each endpoint, a spatial neighborhood is constructed as the set of all nodes within a given Euclidean radius, forming an initial candidate set. This set is then filtered to retain only nodes whose shortest-path distance from the endpoint exceeds a specified threshold. If the resulting set is non-empty, the endpoint is connected to the candidate that is closest in Euclidean space.
+	
+	Optionally, the candidate set can be restricted to endpoint nodes only, so that connections are introduced exclusively between endpoints.
+	
+	\textbf{Examples:}
+	\begin{itemize}
+		\item \textit{Disconnected components.} An endpoint $e$ and a node $v$ are spatially close (their Euclidean distance is within $d_e$) and belong to distinct connected componets (their shortest-path distance is $\infty$). An edge $(e, v)$ may be added, merging the two components.
+		\item \textit{Topologically close nodes.}  An endpoint $e$ and a node $v$ are spatially close (their Euclidean distance is within $d_e$) and topologically close (their shortest-path distance is within $d_g$). No edge is added.
+	\end{itemize}
+	
+	\subsubsection{Prune Short Cycles}
+	
+	The algorithm simplifies the spatial graph representation by iteratively contracting short cycles. At each iteration, it first computes a cycle basis and selects the cycles whose length is below a prescribed threshold. These short cycles are then processed one at the time, ensuring that overlapping cycles are not modified within the same iteration. Each cycle is replaced by a single node, whose spatial coordinates are defined as the centroid of the coordinates of its neighboring nodes. If a cycle has no neighboring nodes, it is simply removed. If replacing a cycle would introduce a node with excessively high degree, the entire component is considered unreliable and is discarded. 
+	
+	The procedure is repeated until no further contractions are possible or until a maximum number of iterations, specified as a parameter of the algorithm, is reached. The algorithm operates independently on each connected component, since different components may require a different number of iterations.
+	
+	
+	\begin{algorithm}[H]
+		\caption{Repair Connectivity}
+		\begin{algorithmic}[1]
+			\Require Spatial graph $G=(V,E)$
+			\Require Euclidean distance threshold $d_e$ (\texttt{max\_euclidean\_distance})
+			\Require Graph-distance threshold $d_g$ (\texttt{min\_graph\_distance})
+			\Require Endpoint restriction flag (\texttt{restrict\_to\_endpoints})
+			
+			\Statex
+			
+			\State $S \gets \{\, e \in V \mid \deg(e)=1 \,\}$ \Comment{Sources}
+			\If{endpoint restriction is enabled}
+			\State $C \gets S$
+			\Else
+			\State $C \gets V$
+			\EndIf
+			
+			\ForAll{$e \in S$}
+			\State $N_e \gets \{\, v \in C \mid \|e-v\| \leq d_e \,\}$ \Comment{Euclidean neighborhood}
+			\State $T_e \gets \{\, v \in N_e \mid \mathrm{dist}_G(e,v) \geq d_g \,\}$ \Comment{Graph-distance filtering}
+			
+			\If{$T_e \neq \emptyset$}
+			\State $v^* \gets \arg\min_{v \in T_e} \|e-v\|$
+			\State $E \gets E \cup \{(e,v^*)\}$
+			\EndIf
+			\EndFor
+			
+			\State \Return $G$
+		\end{algorithmic}
+	\end{algorithm}
+	
+	\begin{algorithm}[H]
+		\caption{Prune Short Cycles}
+		\begin{algorithmic}[1]
+			\Require Spatial graph $G=(V,E)$
+			\Require Minimum cycle length $\ell_{\min}$ (\texttt{min\_cycle\_length})
+			\Require Maximum number of iterations $k_{\max}$
+			\Require Wiring cap $w_{\max}$
+			
+			\Statex
+			
+			\State Decompose $G$ into connected components $\mathcal{C} = \{G_1,\dots,G_m\}$
+			
+			\ForAll{$G_i \in \mathcal{C}$}
+			\For{$k = 1$ to $k_{\max}$}
+			\State $B \gets$ a cycle basis of $G_i$
+			\State $S \gets \{\, c \in B \mid |c| < \ell_{\min} \,\}$ \Comment{Short cycles}
+			
+			\If{$S = \emptyset$}
+			\State \textbf{break}
+			\EndIf
+			
+			\State $R \gets \emptyset$ \Comment{Nodes removed}
+			
+			\ForAll{$c \in S$}
+			\If{$c \cap R \neq \emptyset$}
+			\State \textbf{continue} \Comment{Skip overlapping cycles}
+			\EndIf
+			
+			\State $N_c \gets \{\, v \in V(G_i)\setminus c \mid \exists\, u \in c$ with $(u,v)\in E(G_i) \,\}$
+			
+			\State Remove all nodes in $c$ from $G_i$
+			\State $R \gets R \cup c$
+			
+			\If{$N_c = \emptyset$}
+			\State \textbf{continue} \Comment{Discard isolated cycle}
+			\EndIf
+			
+			\If{$|N_c| > w_{\max}$}
+			\State Clear $G_i$ \Comment{Discard corrupted component}
+			\State \textbf{break}
+			\EndIf
+			
+			\State $v^* \gets \mathrm{centroid}(N_c)$
+			\State Add $v^*$ to $G_i$
+			\State Add edges $\{\, (v^*,v) \mid v \in N_c \,\}$ to $G_i$
+			\EndFor
+			\EndFor
+			\EndFor
+			
+			\State $G \gets$ recomposition of all components in $\mathcal{C}$
+			\State \Return $G$
+		\end{algorithmic}
+	\end{algorithm}
+	
+	\subsubsection{Prune Short Branches}
+	
+	The algorithm simplifies the spatial graph representation by iteratively pruning short branches. A branch is defined as a maximal path starting from an endpoint and traversing only nodes of degree 2, until a node of degree different from 2 is reached. This terminal node is referred to as the \textit{joint} of the branch, i.e., the node at which the branch attaches to the rest of the graph.
+	
+	The algorithm proceeds iteratively: at each iteration, it identifies all branches whose length is below a prescribed threshold. These short branches are then processed in increasing order of length, so that the shortest and most likely spurious branches are removed first. The algorithm prevents the removal of multiple branches that share the same joint within a single iteration. This restriction is essential because a branch that is classified as short at the beginning of an iteration may no longer satisfy this condition after a neighboring branch has been removed.
+	
+	For instance, consider a Y-shaped structure in which two short branches meet at a joint, while a third segment (the ``trunk'' of the Y) connects the joint to the rest of the graph. If one of the two short branches is removed, the joint loses one incident edge and its degree drops from 3 to 2, so that it is no longer a junction. As a result, the remaining short branch no longer terminates at that node, but instead continues through it and forms a longer path together with the trunk; consequently, it may no longer be classified as short. For this reason, once a branch incident to a given joint is removed, all other branches attached to that joint are deferred to the next iteration, where they are re-extracted and re-evaluated on the updated graph.
+	
+	The procedure continues until there are no remaining short branches or until a maximum number of iterations, specified as a parameter of the algorithm, is reached. The algorithm operates independently on each connected component, since different components may require a different number of iterations.
+	
+	\begin{algorithm}[H]
+		\caption{Prune Short Branches}
+		\begin{algorithmic}[1]
+			\Require Spatial graph $G=(V,E)$
+			\Require Minimum branch length $\ell_{\min}$ (\texttt{min\_branch\_length})
+			\Require Maximum number of iterations $k_{\max}$
+			
+			\Statex
+			
+			\State Decompose $G$ into connected components $\mathcal{C}=\{G_1,\dots,G_m\}$
+			
+			\ForAll{$G_i \in \mathcal{C}$}
+			\For{$k = 1$ to $k_{\max}$}
+			\State $S \gets \{\, v \in V(G_i) \mid \deg(v)=1 \,\}$ \Comment{Endpoints}
+			\State $B \gets \emptyset$ \Comment{Branches marked for removal}
+			
+			\ForAll{$e \in S$}
+			\State Extract the branch $b_e$ starting at $e$
+			\If{$|b_e| < \ell_{\min}$}
+			\State $B \gets B \cup \{b_e\}$
+			\EndIf
+			\EndFor
+			
+			\If{$B = \emptyset$}
+			\State \textbf{break}
+			\EndIf
+			
+			\State $J \gets \emptyset$ \Comment{Processed joints}
+			
+			\ForAll{$b \in B$ in increasing order of length}
+			\State $v_b \gets$ joint of $b$
+			\If{$v_b \notin J$}
+			\State Remove all nodes of $b$ except $v_b$
+			\State $J \gets J \cup \{v_b\}$
+			\EndIf
+			\EndFor
+			\EndFor
+			\EndFor
+			
+			\State Recombine all components into $G$
+			\State \Return $G$
+		\end{algorithmic}
+	\end{algorithm}
+	
+	\newpage
+	
+	\subsubsection{Prune by Thickness}
+	
+	DNA molecules are thin filaments and thick regions in the mask produced by the Segmentation Module are typically associated with noise or artifacts. Each node/pixel in the spatial graph representation carries a thickness attribute, which captures the thickness of the binary mask at that pixel. The Prune by Thickness algorithm simplifies the spatial graph by removing nodes that exhibit excessive thickness.
+	
+	Nodes whose thickness exceeds a prescribed threshold (\texttt{max\_thickness}) are considered candidates for removal. However, such nodes are only removed if they are not structurally important, as their removal could otherwise disconnect relevant parts of the graph.
+	
+	A node is defined as structurally important if it plays a significant role in the connectivity of the graph. This is the case if either:
+	\begin{itemize}
+		\item the node belongs to a cycle; or
+		\item the node has at least two structurally important incident edges.
+	\end{itemize}
+	
+	More precisely, an incident edge is considered structurally important if, when followed away from the node, it either:
+	\begin{itemize}
+		\item reaches nodes at a distance greater than a prescribed depth cutoff (\texttt{structurality\_depth\_cutoff}), indicating that it connects to a sufficiently extended structure; or
+		\item leads to a cycle anywhere in the graph, indicating connection to a loop-like structure.
+	\end{itemize}
+	
+	Requiring at least two such edges ensures that the node is not merely attached to a single significant structure, but instead acts as a connector between multiple meaningful regions of the graph. Nodes that do not satisfy these conditions are considered non-structural and can be safely removed if their thickness exceeds the prescribed threshold.
+	
+	\subsubsection{Repair Connectivity (II)}
+	
+	The spatial graph representation is further refined by a second pass of the Repair Connectivity algorithm, using a different set of parameters from the first pass.
+	
+	\newpage
+	
+	\subsubsection{Prune Small Components}
+	
+	The spatial graph representation is pruned by removing connected components whose largest bounding box side is smaller than the user-defined threshold \texttt{minimum\_bbox\_size}, thereby discarding small and likely spurious structures. Here, the bounding box is defined as the smallest axis-aligned rectangle enclosing all nodes of a connected component.
+	
+	\subsubsection{Graph-to-Mask Conversion}
+	
+	Once error correction is complete, the cleaned spatial graph representation is rendered back onto the pixel grid, yielding a binary segmentation mask that retains the improvements from graph-based repair. This is achieved by initializing an empty image canvas and assigning foreground values to the pixel locations corresponding to the coordinates of the graph nodes.
+	
+	\section{Spatial Graph Export Format}
+	
+	The cleaned spatial graph representation generated by the Error Correction Module is exported in a custom HDF5 format, where each connected component, corresponding to a molecule, is stored as a separate group.
+	
+	A connected component / molecule is represented as a set of \emph{linear walks}, defined as maximal non-branching paths. Each walk is an ordered sequence of nodes in which all intermediate nodes have degree two. Walks are encoded through two datasets:
+	
+	\begin{itemize}
+		\item The \texttt{coords} dataset is a 2D array of shape $(N, 2)$ containing the concatenated coordinates of all walks. 
+		\item The \texttt{offsets} dataset is a 1D array of length $K+1$ that partitions \texttt{coords} into $K$ individual walks, such that the $i$-th walk is given by \texttt{coords[offsets[i]:offsets[i+1]]}.
+	\end{itemize}
+	
+	The component  / molecule label (non-linear, linear, or boundary) is stored as a group attribute.
+	
+	\newpage
+	
+	A molecule is reconstructed as a set of linear walks, i.e., coordinate sequences, by slicing \texttt{coords} according to \texttt{offsets}:
+	
+\begin{lstlisting}
+import h5py
+import numpy as np
+
+def load_molecule(h5_grp):
+	coords = h5_grp['coords'][:]
+	offsets = h5_grp['offsets'][:]
+	
+	seqs = []
+	for i in range(len(offsets) - 1):
+		start, end = offsets[i], offsets[i+1]
+		seq = coords[start:end]
+		seqs.append(seq)
+
+	return seqs
+\end{lstlisting}
+	
+	Adjacency between walks is recovered by identifying sequences that share the same terminal coordinates:
+	
+\begin{lstlisting}
+from collections import defaultdict
+import numpy as np
+
+def build_adjacency(seqs):
+	n_seqs = len(seqs)
+	adjacency = np.zeros((n_seqs, n_seqs))
+	
+	terminal_map = defaultdict(list)
+	for i, seq in enumerate(seqs):
+		first = tuple(int(x) for x in seq[0].tolist())
+		last = tuple(int(x) for x in seq[-1].tolist())
+		terminal_map[first] += [i]
+		terminal_map[last] += [i]
+		
+	for indices in terminal_map.values():
+		for i in range(len(indices)):
+			for j in range(i + 1, len(indices)):
+				adjacency[indices[i], indices[j]] = 1
+				adjacency[indices[j], indices[i]] = 1
+
+	return adjacency
+\end{lstlisting}
+	\newpage
+	The walks can be easily rendered into a binary mask:
+	
+	\begin{lstlisting}
+import cv2
+import numpy as np
+
+def render_walks(seqs):
+	all_points = np.concatenate(seqs)
+	min_y, min_x = np.min(all_points, axis=0)
+	max_y, max_x = np.max(all_points, axis=0)
+	width = max_x - min_x + 1
+	height = max_y - min_y + 1
+	
+	canvas = np.zeros((height, width), dtype=np.uint8)
+	y = all_points[:, 0] - min_y
+	x = all_points[:, 1] - min_x
+	canvas[y, x] = 255
+	
+	dilation_kernel = np.ones((5, 5), np.uint8)
+	canvas = cv2.dilate(canvas, dilation_kernel, iterations=1)
+
+return canvas
+	\end{lstlisting}
+
+\end{document}

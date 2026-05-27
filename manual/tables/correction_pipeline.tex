@@ -1,0 +1,26 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Error Correction Module.}}
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Step} & \textbf{Purpose} \\
+\hline
+Mask-to-Graph Conversion & Convert each segmented DNA molecule in the mask into a spatial graph representation, where nodes correspond to pixels along the molecule with their (x, y) coordinates, and edges encode connectivity. \\
+\hline
+Repair Connectivity (1) & Operate on spatial graph representations to address fragmentation caused by segmentation errors in thin DNA structures, by selectively adding edges between relevant node pairs to restore connectivity. \\
+\hline
+Prune Short Cycles & Operate on spatial graph representations to remove spurious short cycles, using a predefined cycle-length threshold. \\
+\hline
+Prune Short Branches & Operate on spatial graph representations to remove spurious short branches, using a predefined branch-length threshold. \\
+\hline
+Prune by Thinkness & Clean the spatial graph representations by removing nodes associated with abnormally thick regions, leveraging the prior that DNA structures are thin and thicker regions are typically spurious. \\
+\hline
+Repair Connectivity (2) & Further refine spatial graph representations by performing a second connectivity repair step, using different parameters from the first repair stage. \\
+\hline
+Prune Small Components & Discard small spatial graph representations that are likely spurious. \\
+\hline
+Graph-to-Mask Conversion & Convert the refined spatial graph representations back into mask form for downstream analysis or visualization. \\
+\hline
+\end{tabular}
+\label{tab:correction_pipeline}
+\end{table}
