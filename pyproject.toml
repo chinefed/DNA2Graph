@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dna2graph"
-version = "1.0.0"
+version = "1.0.1"
 description = """Imaging software that automates the segmentation and analysis of DNA molecules in electron microscopy images (CLI + GUI)."""
 authors = [
   { name = "Federico Chinello", email = "federico.chinello@studbocconi.it" }
