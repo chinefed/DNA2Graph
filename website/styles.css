@@ -11,6 +11,7 @@
   --rad: 14px;
   --maxw: 800px;
   --page-w: 800px;
+  --content-w: calc(var(--page-w) - (2 * var(--g)) - 2px);
   --g: 22px;
   --portrait-w: 220px;
 }
@@ -34,6 +35,8 @@ body {
   overflow-x: auto;
   overflow-y: scroll;
   scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 img {
@@ -141,14 +144,17 @@ nav {
 }
 
 .shell {
+  width: 100%;
+  min-width: 100%;
   padding: var(--g)
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: var(--content-w);
   gap: var(--g);
-  width: 100%;
+  width: var(--content-w);
+  min-width: var(--content-w);
 }
 
 h2 {
