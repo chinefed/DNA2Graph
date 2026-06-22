@@ -35,6 +35,9 @@ def prune_short_cycles(G, min_cycle_length, max_iterations):
     for G_component in components:
 
         for _ in range(max_iterations):
+            # Remove self-loops if present
+            G_component.remove_edges_from(nx.selfloop_edges(G_component))
+            
             # Find a cycle basis of the component and keep only the short cycles
             short_cycles = [
                 set(cycle) for cycle in nx.cycle_basis(G_component)
@@ -87,6 +90,9 @@ def prune_short_cycles(G, min_cycle_length, max_iterations):
 
     # After processing all components, we combine them back into a single graph
     G = nx.compose_all(components)
+    
+    # Remove self-loops if present
+    G.remove_edges_from(nx.selfloop_edges(G))    
 
     return G
 
@@ -408,7 +414,7 @@ class Corrector:
             )
 
             # Run a second pass of prune_short_branches
-            # if repair_2_restrict_to_endpoints is True
+            # if repair_2_restrict_to_endpoints is False
             # (may create short branches)
             if not self.repair_2_restrict_to_endpoints:
                 G = prune_short_branches(
