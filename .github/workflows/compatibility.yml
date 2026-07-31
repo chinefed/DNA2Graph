@@ -2,6 +2,8 @@ name: Compatibility tests
 
 on:
   push:
+    branches:
+      - main
     paths:
       - pyproject.toml
       - tox.ini
@@ -9,6 +11,8 @@ on:
       - .github/workflows/compatibility.yml
       - dna2graph/**
   pull_request:
+    branches:
+      - main
     paths:
       - pyproject.toml
       - tox.ini
