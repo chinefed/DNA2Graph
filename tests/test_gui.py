@@ -53,6 +53,15 @@ def test_gui_opens(tmp_path):
         assert not advanced_window.winfo_exists()
 
         try:
+            window.deiconify()
+            window.lift()
+            window.attributes("-topmost", True)
+            window.focus_force()
+            window.update_idletasks()
+            window.update()
+            window.after(250)
+            window.update()
+
             left = window.winfo_rootx()
             top = window.winfo_rooty()
             right = left + window.winfo_width()
@@ -67,6 +76,7 @@ def test_gui_opens(tmp_path):
                 **grab_options,
             )
             screenshot.save(tmp_path / "dna2graph_gui.png")
+            window.attributes("-topmost", False)
         except Exception as error:
             warnings.warn(
                 f"Unable to capture the GUI screenshot on {sys.platform}: "

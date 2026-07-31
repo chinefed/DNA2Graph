@@ -40,8 +40,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v9.0.0
         with:
-          enable-cache: true
-          prune-cache: true
+          enable-cache: false
 
       - name: Restore Hugging Face model cache
         id: model-cache
@@ -87,6 +86,7 @@ jobs:
         with:
           enable-cache: true
           prune-cache: true
+          cache-suffix: ${{ matrix.tox-env }}
 
       - name: Restore Hugging Face model cache
         uses: actions/cache/restore@v6.1.0
