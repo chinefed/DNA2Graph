@@ -5,21 +5,21 @@
 \hline
 \textbf{Step} & \textbf{Purpose} \\
 \hline
-Mask-to-Graph Conversion & Convert each segmented DNA molecule in the mask into a spatial graph representation, where nodes correspond to pixels along the molecule with their (x, y) coordinates, and edges encode connectivity. \\
+Mask-to-Graph Conversion & Converts each segmented DNA molecule in the mask into a spatial graph representation, where nodes correspond to pixels along the molecule with their $(x, y)$ coordinates, and edges encode connectivity. \\
 \hline
-Repair Connectivity (1) & Operate on spatial graph representations to address fragmentation caused by segmentation errors in thin DNA structures, by selectively adding edges between relevant node pairs to restore connectivity. \\
+Repair Connectivity (I) & Operates on spatial graph representations to address fragmentation caused by segmentation errors or signal dropout in thin DNA structures, by adding edges between relevant node pairs to restore connectivity. \\
 \hline
-Prune Short Cycles & Operate on spatial graph representations to remove spurious short cycles, using a predefined cycle-length threshold. \\
+Prune Short Cycles & Operates on spatial graph representations to remove spurious short cycles, using a predefined cycle-length threshold. \\
 \hline
-Prune Short Branches & Operate on spatial graph representations to remove spurious short branches, using a predefined branch-length threshold. \\
+Prune Short Branches & Operates on spatial graph representations to remove spurious short branches, using a predefined branch-length threshold. \\
 \hline
-Prune by Thinkness & Clean the spatial graph representations by removing nodes associated with abnormally thick regions, leveraging the prior that DNA structures are thin and thicker regions are typically spurious. \\
+Prune by Thinkness & Cleans the spatial graph representations by removing nodes associated with abnormally thick regions, leveraging the prior that DNA structures are thin and thicker regions are typically spurious. \\
 \hline
-Repair Connectivity (2) & Further refine spatial graph representations by performing a second connectivity repair step, using different parameters from the first repair stage. \\
+Prune Small Components & Discards small spatial graph representations that are likely spurious. \\
 \hline
-Prune Small Components & Discard small spatial graph representations that are likely spurious. \\
+Repair Connectivity (II) & Further refines spatial graph representations by performing a second connectivity repair step, using different parameters from the first repair stage. \\
 \hline
-Graph-to-Mask Conversion & Convert the refined spatial graph representations back into mask form for downstream analysis or visualization. \\
+Graph-to-Mask Conversion & Converts the refined spatial graph representations back into mask form. \\
 \hline
 \end{tabular}
 \label{tab:correction_pipeline}

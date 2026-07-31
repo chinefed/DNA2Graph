@@ -82,8 +82,7 @@
           <section id="how-works">
             <h2>How does DNA2Graph work?</h2>
             <p>
-              DNA2Graph offers two alternative approaches for segmentation: a custom, non-learning-based pipeline based on traditional image processing techniques, and a deep learning model trained specifically for this task.
-              In addition, it incorporates novel post-processing algorithms to ensure structural continuity and biological plausibility.
+              DNA2Graph performs an initial segmentation of DNA molecules and subsequently represents each molecule as a spatial graph of nodes and edges. Rather than treating segmentation as a purely pixel-level task, it employs novel graph-based error-correction algorithms to repair segmentation errors and signal interruptions while enforcing biological priors of DNA molecules, such as continuity and thinness.
             </p>
           </section>
             
@@ -110,7 +109,7 @@
             <h2>How to cite DNA2Graph?</h2>
 
             <div class="code-block">
-                <p>F. Chinello, E. Zanella, M. Giannattasio, F. M. Buffa, and Y. Doksani.</p>
+                <p>F. Chinello, M. Giannattasio, E. Zanella, F. Bruno, F. M. Buffa, and Y. Doksani.</p>
                 <p>DNA2Graph [Computer software]. Zenodo, 2026.</p>
                 <p>https://doi.org/10.5281/zenodo.20413553</p>
             </div>

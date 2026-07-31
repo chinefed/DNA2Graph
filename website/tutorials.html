@@ -37,7 +37,7 @@
           <h2>Example Input Image</h2>
         
           <p>
-          We provide the input image used in the GUI and CLI tutorials for download.
+          We provide the input image used in the tutorials for download.
           </p>
           
           <a href="https://github.com/chinefed/DNA2Graph/releases/download/v1.0.1/sample_input.tif" class="btn">Download Example Input Image</a>
@@ -59,8 +59,8 @@
           <div class="note-box">
 
         <strong>NOTE:</strong>
-        The trained segmentation pipeline is available as a beta feature.
-        Try the standard pipeline first.
+        The trained segmentation pipeline is a beta feature.
+        The default pipeline is recommended for most users.
         </div>
         
         </section>
@@ -93,12 +93,8 @@
     
         <div class="note-box">
         <strong>NOTE:</strong>
-        The segmenter patch size must not be smaller than the shortest side of the input image.
-        </div>
-        
-        <div class="note-box">
-        <strong>NOTE:</strong>
-        When using the trained segmentation pipeline, the patch size must also be divisible by 32.
+        The segmenter patch size must be smaller than the shortest side of the input image.
+        When using the trained segmentation pipeline, the segmenter patch size must also be divisible by 32.
         </div>
       
       </section>

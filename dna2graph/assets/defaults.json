@@ -29,7 +29,7 @@
         "batch_size": 32,
         "min_cycle_length": 100,
         "min_branch_length": 150,
-        "max_thickness": 6,
+        "max_thickness": 20,
         "structurality_depth_cutoff": 50,
         "repair_1_min_graph_distance": 200,
         "repair_1_max_euclidean_distance": 20,
