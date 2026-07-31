@@ -1,0 +1,118 @@
+name: Compatibility tests
+
+on:
+  push:
+    paths:
+      - pyproject.toml
+      - tox.ini
+      - tests/**
+      - .github/workflows/compatibility.yml
+      - dna2graph/**
+  pull_request:
+    paths:
+      - pyproject.toml
+      - tox.ini
+      - tests/**
+      - .github/workflows/compatibility.yml
+      - dna2graph/**
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-model-cache:
+    name: Prepare model cache / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: false
+          ignore-empty-workdir: true
+
+      - name: Restore Hugging Face model cache
+        id: model-cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .tox/hf-cache
+          key: ${{ runner.os }}-dna2graph-huggingface-segmenter-v1
+
+      - name: Download Hugging Face model
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        env:
+          HF_HOME: ${{ github.workspace }}/.tox/hf-cache
+        run: >-
+          uv run --no-project --with "huggingface-hub>=0.20.0"
+          python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='chinefed/dna2graph-models', filename='segmentation/dna2graph_segmenter_v1.pth')"
+
+  test:
+    name: ${{ matrix.os }} / ${{ matrix.tox-env }}
+    needs: prepare-model-cache
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        tox-env:
+          - 3.11-lower
+          - 3.11-latest
+          - 3.12-latest
+          - 3.13-latest
+          - 3.14-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+          prune-cache: true
+          cache-suffix: ${{ matrix.tox-env }}
+
+      - name: Restore Hugging Face model cache
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: .tox/hf-cache
+          key: ${{ runner.os }}-dna2graph-huggingface-segmenter-v1
+
+      - name: Install tox
+        run: uv tool install tox --with tox-uv
+
+      - name: Run tests with virtual display
+        if: runner.os == 'Linux'
+        run: xvfb-run -a tox run -e "${{ matrix.tox-env }}"
+
+      - name: Run tests with native display
+        if: runner.os != 'Linux'
+        run: tox run -e "${{ matrix.tox-env }}"
+
+      - name: Upload test outputs
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: dna2graph-outputs-${{ matrix.os }}-${{ matrix.tox-env }}
+          path: |
+            .tox/pytest-output/
+            !.tox/pytest-output/**/.cache/**
+          if-no-files-found: warn
+          retention-days: 7

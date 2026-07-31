@@ -5,21 +5,21 @@
 \hline
 \textbf{Step} & \textbf{Purpose} \\
 \hline
-Validity mask computation & Compute a binary mask that identifies valid regions of the image, used throughout the pipeline to exclude corrupted or irrelevant areas and prevent them from influencing segmentation. \\
+Validity mask computation & Computes a binary mask that identifies valid regions of the image, used throughout the pipeline to exclude corrupted or irrelevant areas and prevent them from influencing segmentation. \\
 \hline
-Preprocessing & Enhance contrast and standardize intensity distributions to reduce inter-image variability; convert 16-bit images to 8-bit and invert intensities so DNA molecules exhibit higher grayscale values than the background. \\
+Preprocessing & Enhances contrast and standardizes intensity distributions to reduce inter-image variability; converts 16-bit images to 8-bit and inverts intensities so DNA molecules exhibit higher grayscale values than the background. \\
 \hline
-Bilateral Filter & Reduce background noise while preserving edge information, ensuring that thin DNA molecules remain well-defined for subsequent processing. \\
+Bilateral Filter & Reduces background noise while preserving edge information, ensuring that thin DNA molecules remain well-defined for subsequent processing. \\
 \hline
-Unsharp Masking & Enhance edges and local contrast to better highlight DNA structures against the background. \\
+Unsharp Masking & Enhances edges and local contrast to better highlight DNA structures against the background. \\
 \hline
-Hysteresis Thresholding & Generate a binary segmentation by separating DNA molecules from the background. \\
+Hysteresis Thresholding & Generates a binary segmentation by separating DNA molecules from the background. \\
 \hline
-Area-based Pruning (1) & Remove small, spurious segmented regions based on a predefined area threshold. \\
+Area-based Pruning (I) & Removes small, spurious segmented regions based on a predefined area threshold. \\
 \hline
-Morphological Closing & Fill small gaps and discontinuities between segmented regions to improve the structural continuity of DNA molecules. \\
+Morphological Closing & Fills small gaps and discontinuities between segmented regions to improve the structural continuity of DNA molecules. \\
 \hline
-Area-based Pruning (2) & Remove small, spurious segmented regions based on a predefined area threshold, which can differ from the one used in the first pruning stage. \\
+Area-based Pruning (II) & Removes small, spurious segmented regions based on a predefined area threshold, which can differ from the one used in the first pruning stage. \\
 \hline
 \end{tabular}
 \label{tab:segmentation_pipeline}

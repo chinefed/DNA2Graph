@@ -46,6 +46,10 @@ class MainWindow(tk.Tk):
         self.stop_event = mp.Event()
 
         self._build_ui()
+        self.update_idletasks()
+        required_width = max(720, self.winfo_reqwidth())
+        required_height = max(570, self.winfo_reqheight() + 10)
+        self.geometry(f'{required_width}x{required_height}')
 
     def _build_ui(self):
         # === Path Selectors ====

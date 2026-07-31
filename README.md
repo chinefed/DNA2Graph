@@ -80,7 +80,7 @@ For help with DNA2Graph, contact the project maintainer at [federico.chinello@st
 ## Citation
 
 ```text
-F. Chinello, E. Zanella, M. Giannattasio, F. M. Buffa, and Y. Doksani.
+F. Chinello, M. Giannattasio, E. Zanella, F. Bruno, F. M. Buffa, and Y. Doksani.F
 DNA2Graph [Computer software]. Zenodo, 2026.
 https://doi.org/10.5281/zenodo.20413553
 ```

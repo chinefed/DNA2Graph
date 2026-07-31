@@ -4,29 +4,29 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dna2graph"
-version = "1.0.1"
+version = "1.0.2"
 description = """Imaging software that automates the segmentation and analysis of DNA molecules in electron microscopy images (CLI + GUI)."""
 authors = [
   { name = "Federico Chinello", email = "federico.chinello@studbocconi.it" }
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.11,<3.15"
 dependencies = [
-  "numpy",
-  "scipy",
-  "scikit-image",
-  "opencv-python",
-  "torch",
-  "monai",
-  "pandas",
-  "networkx",
-  "h5py",
-  "roifile",
-  "huggingface-hub",
-  "tqdm",
-  "packaging",
-  "appdirs"
+  "numpy>=1.24.4",
+  "scipy>=1.10.1",
+  "scikit-image>=0.21.0",
+  "opencv-python>=4.8.0.76",
+  "torch>=2.0.1",
+  "monai>=1.3.0",
+  "pandas>=2.0.3",
+  "networkx>=3.1",
+  "h5py>=3.8.0",
+  "roifile>=2023.5.12",
+  "huggingface-hub>=0.20.0",
+  "tqdm>=4.65.0",
+  "packaging>=23.0",
+  "appdirs>=1.4.4",
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
