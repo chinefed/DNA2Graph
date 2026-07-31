@@ -41,6 +41,7 @@ jobs:
         uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: false
+          ignore-empty-workdir: true
 
       - name: Restore Hugging Face model cache
         id: model-cache
