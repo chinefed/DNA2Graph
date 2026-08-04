@@ -54,7 +54,7 @@
 	
 	\subsection{Supported Image Formats}
 	
-	DNA2Graph supports 8-bit and 16-bit grayscale images if TIFF format.
+	DNA2Graph supports 8-bit and 16-bit grayscale images in TIFF format.
 	
 	\vspace{-0.08cm}
 	
@@ -173,13 +173,13 @@
 	
 	\textbf{Examples:}
 	\begin{itemize}
-		\item \textit{Disconnected components.} An endpoint $e$ and a node $v$ are spatially close (their Euclidean distance is within $d_e$) and belong to distinct connected componets (their shortest-path distance is $\infty$). An edge $(e, v)$ is added, merging the two components.
+		\item \textit{Disconnected components.} An endpoint $e$ and a node $v$ are spatially close (their Euclidean distance is within $d_e$) and belong to distinct connected components (their shortest-path distance is $\infty$). An edge $(e, v)$ is added, merging the two components.
 		\item \textit{Topologically close nodes.}  An endpoint $e$ and a node $v$ are spatially close (their Euclidean distance is within $d_e$) and topologically close (their shortest-path distance is within $d_g$). No edge is added.
 	\end{itemize}
 	
 	\subsubsection{Prune Short Cycles}
 	
-	The algorithm simplifies the spatial graph representation by iteratively contracting short cycles. At each iteration, it first computes a cycle basis and selects the cycles whose length is below a prescribed threshold. These short cycles are then processed one at the time, ensuring that overlapping cycles are not modified within the same iteration. Each cycle is replaced by a single node, whose spatial coordinates are defined as the centroid of the coordinates of its neighboring nodes. If a cycle has no neighboring nodes, it is simply removed. If replacing a cycle would introduce a node with excessively high degree, the entire component is considered unreliable and is discarded. 
+	The algorithm simplifies the spatial graph representation by iteratively contracting short cycles. At each iteration, it first computes a cycle basis and selects the cycles whose length is below a prescribed threshold. These short cycles are then processed one at a time, ensuring that overlapping cycles are not modified within the same iteration. Each cycle is replaced by a single node, whose spatial coordinates are defined as the centroid of the coordinates of its neighboring nodes. If a cycle has no neighboring nodes, it is simply removed. If replacing a cycle would introduce a node with excessively high degree, the entire component is considered unreliable and is discarded. 
 	
 	The procedure is repeated until no further contractions are possible or until a maximum number of iterations, specified as a parameter of the algorithm, is reached. The algorithm operates independently on each connected component, since different components may require a different number of iterations.
 	
@@ -357,7 +357,7 @@
 	
 	Once error correction is complete, the cleaned spatial graph representation is rendered back onto the pixel grid, yielding a binary segmentation mask that retains the improvements from graph-based repair. The conversion first rasterizes a line between the endpoints of every graph edge, producing intermediate pixels for long edges added during connectivity repair. It then applies a $5 \times 5$ dilation.
 	
-	\section{Trained Segmentation Piepeline (Beta)}
+	\section{Trained Segmentation Pipeline (Beta)}
 	
 	DNA2Graph includes an optional analysis mode that replaces its standard Segmentation Module (Section \ref{sec:segmentation}) with a custom CNN U-Net model (\texttt{Use Trained Segmentation Pipeline}). The U-Net was trained from scratch using segmentation masks generated automatically by DNA2Graph itself, without manual annotation. 
 	
@@ -459,7 +459,7 @@ def render_walks(seqs):
 	return canvas
 	\end{lstlisting}
 	
-Note that this simple function is aimed for quick inspection and, differently from the rendering approach used internally by DNA2Graph (Section \ref{sec:g2m}), it does not add intermediate pixels along the long edges introduced by connectivity repair. As a result, the rendered molecule may display gaps even if the underlying graph is connceted.
+Note that this simple function is aimed for quick inspection and, differently from the rendering approach used internally by DNA2Graph (Section \ref{sec:g2m}), it does not add intermediate pixels along the long edges introduced by connectivity repair. As a result, the rendered molecule may display gaps even if the underlying graph is connected.
 
 \section{Cache}
 
