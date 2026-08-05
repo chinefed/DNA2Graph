@@ -365,6 +365,8 @@
 	The trained segmentation pipeline is currently provided as a beta feature, and we recommend that most users employ
 	the standard segmentation pipeline for their analyses.
 	
+	\newpage
+	
 	\section{Supported Image Formats}
 	
 	DNA2Graph supports 8-bit and 16-bit grayscale images in TIFF format. The software was thoroughly tested on images acquired at pixel sizes of approximately 1.0–1.7 nm/pixel.  Large deviations from this range may require parameter re-tuning for optimal performance.
@@ -386,6 +388,8 @@
 	
 	The component  / molecule label (non-linear, linear, or boundary) is stored as a group attribute.
 	
+	\newpage
+	
 	A molecule is reconstructed as a set of linear walks, i.e., coordinate sequences, by slicing \texttt{coords} according to \texttt{offsets}:
 	
 \begin{lstlisting}
@@ -404,8 +408,6 @@ def load_molecule(h5_grp):
 		
 	return seqs
 \end{lstlisting}
-
-\newpage
 	
 	Adjacency between walks is recovered by identifying sequences that share the same terminal coordinates:
 	
